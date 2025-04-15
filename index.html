@@ -1,0 +1,73 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>My Doggy Shop</title>
+  <link rel="stylesheet" href="styles.css"/>
+
+  <!-- SDK de PayPal -->
+  <script src="https://www.paypal.com/sdk/js?client-id=sb&currency=USD"></script>
+  <!-- Reemplaza "sb" por tu Client-ID real de PayPal en producción -->
+</head>
+<body>
+  <header>
+    <h1>My Doggy Shop 🐾</h1>
+    <label for="filtroCategoria">Filtrar por categoría:</label>
+    <select id="filtroCategoria">
+      <option value="todos">Todos</option>
+      <option value="juguetes">Juguetes</option>
+      <option value="comida">Comida</option>
+      <option value="ropa">Ropa</option>
+    </select>
+  </header>
+
+  <section id="productos"></section>
+
+  <section class="carrito">
+    <h2>Carrito de Compras 🛒</h2>
+    <ul id="listaCarrito"></ul>
+    <p>Total: <span id="total">$0</span></p>
+    <button class="vaciar" id="vaciarCarrito">Vaciar carrito</button>
+    <button class="finalizar" id="finalizarCompra">Finalizar compra</button>
+
+    <!-- Área donde aparece el mensaje de compra -->
+    <div class="pago" id="pago"></div>
+
+    <!-- Contenedor del botón de PayPal -->
+    <div id="paypal-button-container" style="margin-top: 20px;"></div>
+  </section>
+
+  <script src="script.js"></script>
+
+  <!-- Script para integrar el botón de PayPal -->
+  <script>
+    paypal.Buttons({
+      createOrder: function(data, actions) {
+        const total = document.getElementById("total").textContent.replace("$", "");
+        return actions.order.create({
+          purchase_units: [{
+            amount: {
+              value: (parseFloat(total) / 4000).toFixed(2) // Aproximamos COP a USD
+            }
+          }]
+        });
+      },
+      onApprove: function(data, actions) {
+        return actions.order.capture().then(function(details) {
+          document.getElementById("pago").innerHTML = `<h3>¡Gracias por tu compra, ${details.payer.name.given_name}! 🐶</h3>`;
+          carrito = [];
+          actualizarCarrito();
+        });
+      },
+      onCancel: function () {
+        alert("El pago fue cancelado.");
+      },
+      onError: function (err) {
+        console.error("Error en el pago:", err);
+        alert("Ocurrió un error al procesar el pago.");
+      }
+    }).render('#paypal-button-container');
+  </script>
+</body>
+</html>
